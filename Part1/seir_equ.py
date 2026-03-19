@@ -41,7 +41,7 @@ def seir_solve(beta, sigma, gamma, s0, e0, i0, r0, t_end=100, t_steps=1000):
 
 ## Function to check that the sum of s,e,i and r is equal to 1
 
-def conservation(t, s,e,i,r):
+def conservation(t, s, e, i, r):
     total = s + e + i + r
     tolerance = 1e-6
     values = np.abs(total - 1.0)
@@ -56,5 +56,47 @@ def conservation(t, s,e,i,r):
         print(f'Max deviation: {worst_val:.6e}')
         print(f'Time at fail: {worst_conservation:.1f}')
         return False
-        
+
+import matplotlib.pyplot as plt
+
+def plot_seir(t, s, e, i, r, beta, sigma, gamma, save_path):
+    plt.figure(figsize=(10,6))
+    
+    plt.plot(t, s, label='Susceptible', color='blue')
+    plt.plot(t, e, label='Exposed',     color='orange')
+    plt.plot(t, i, label='Infected',    color='green')
+    plt.plot(t, r, label='Recovered',   color='red')
+    
+    plt.xlabel('Time (days)')
+    plt.ylabel('Fraction of population')
+    plt.title(f'SEIR model with beta = {beta}, sigma = {sigma}, gamma = {gamma}')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    
+    plt.savefig(save_path)
+    
+    plt.show()
+
+if __name__ == "__main__":
+    beta  = 1.0
+    sigma = 1.0
+    gamma = 0.1
+    s0, e0, i0, r0 = 0.99, 0.01, 0.0, 0.0
+    
+    t, s, e, i, r = seir_solve(
+        beta=beta, sigma=sigma, gamma=gamma,
+        s0=s0, e0=e0, i0=i0, r0=r0
+    )
+    
+    ## Verifying solver
+    if not conservation(t, s, e, i, r):
+        print("Aborting - solver can't be trusted")
+        exit(1)
+    
+    plot_seir(
+        t, s, e, i, r,
+        beta, sigma, gamma,
+        save_path='figures/reference_verification.png'
+    )
     
