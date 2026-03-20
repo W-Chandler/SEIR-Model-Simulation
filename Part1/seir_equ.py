@@ -37,46 +37,88 @@ def seir_solve(beta, sigma, gamma, s0, e0, i0, r0, t_end=100, t_steps=1000):
     s, e, i, r = solution.y
     t = solution.t
     
-    return t, s, e, i, r
-
-## Function to check that the sum of s,e,i and r is equal to 1
-
-def conservation(t, s, e, i, r):
-    total = s + e + i + r
-    tolerance = 1e-6
-    values = np.abs(total - 1.0)
-    worst_val = np.max(values)
-    worst_conservation = t[np.argmax(values)]
-    
-    if worst_val < tolerance:
-        print(f'Conservation check passed')
-        return True
-    else:
-        print(f'Conservation check failed.')
-        print(f'Max deviation: {worst_val:.6e}')
-        print(f'Time at fail: {worst_conservation:.1f}')
-        return False
+    return seir_results(t, s, e, i, r, beta, sigma, gamma)
 
 import matplotlib.pyplot as plt
+import os
 
-def plot_seir(t, s, e, i, r, beta, sigma, gamma, save_path):
-    plt.figure(figsize=(10,6))
+class seir_results:
+    def __init__(self, t, s, e, i, r, beta, sigma, gamma):
+        self.t     = t
+        self.s     = s
+        self.e     = e
+        self.i     = i
+        self.r     = r
+        self.__beta  = beta
+        self.__sigma = sigma
+        self.__gamma = gamma
+        self.__R0    = beta / gamma
     
-    plt.plot(t, s, label='Susceptible', color='blue')
-    plt.plot(t, e, label='Exposed',     color='orange')
-    plt.plot(t, i, label='Infected',    color='green')
-    plt.plot(t, r, label='Recovered',   color='red')
-    
-    plt.xlabel('Time (days)')
-    plt.ylabel('Fraction of population')
-    plt.title(f'SEIR model with beta = {beta}, sigma = {sigma}, gamma = {gamma}')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    
-    plt.savefig(save_path)
-    
-    plt.show()
+    @property
+    def R0(self):
+        return self.__R0
+
+    @property
+    def beta(self):
+        return self.__beta
+
+    @property
+    def sigma(self):
+        return self.__sigma
+
+    @property
+    def gamma(self):
+        return self.__gamma
+        
+    def outbreak(self):
+        return self.R0 > 1.0
+
+    def peak_infected(self):
+        peak = np.max(self.i)
+        day  = self.t[np.argmax(self.i)]
+        return peak, day
+
+    def final_susceptible(self):
+        return self.s[-1]
+
+    def conservation(self):
+        total = self.s + self.e + self.i + self.r
+        tolerance = 1e-6
+        values = np.abs(total - 1.0)
+        worst_val = np.max(values)
+        worst_conservation = self.t[np.argmax(values)]
+        
+        if worst_val < tolerance:
+            print(f'Conservation check passed')
+            return True
+        else:
+            print(f'Conservation check FAILED.')
+            print(f'Max deviation: {worst_val:.2e}')
+            print(f'Time at fail: {worst_conservation:.1f}')
+            return False
+
+    def plot_seir(self):
+        save_path='figures/reference_verification.png'
+        plt.figure(figsize=(10,6))
+        
+        plt.plot(self.t, self.s, label='Susceptible', color='blue')
+        plt.plot(self.t, self.e, label='Exposed',     color='orange')
+        plt.plot(self.t, self.i, label='Infected',    color='green')
+        plt.plot(self.t, self.r, label='Recovered',   color='red')
+        
+        plt.xlabel('Time (days)')
+        plt.ylabel('Fraction of population')
+        plt.title(f'SEIR model with beta = {self.beta}, sigma = {self.sigma}, gamma = {self.gamma}')
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        
+        plt.savefig(save_path)
+        
+        plt.show()
+
+
+
 
 if __name__ == "__main__":
     beta  = 1.0
@@ -84,19 +126,25 @@ if __name__ == "__main__":
     gamma = 0.1
     s0, e0, i0, r0 = 0.99, 0.01, 0.0, 0.0
     
-    t, s, e, i, r = seir_solve(
+    print("Running SEIR ODE solver with parameters:")
+    print(f'  beta={beta}, sigma={sigma}, gamma={gamma}')
+    print(f'  s0={s0}, e0={e0}, i0={i0}, r0={r0}')
+    print(f'  R0 = beta/gamma = {beta/gamma:.2f}')
+
+    result = seir_solve(
         beta=beta, sigma=sigma, gamma=gamma,
         s0=s0, e0=e0, i0=i0, r0=r0
     )
     
     ## Verifying solver
-    if not conservation(t, s, e, i, r):
+    if not result.conservation():
         print("Aborting - solver can't be trusted")
         exit(1)
     
-    plot_seir(
-        t, s, e, i, r,
-        beta, sigma, gamma,
-        save_path='figures/reference_verification.png'
-    )
+    peak, day = result.peak_infected()
+    print(f'Peak infected: {peak:.3f} at day {day:.1f}')
+    print(f'Remaining susceptible: {result.final_susceptible():.3f}')
+    print(f'Outbreak predicted: {result.outbreak()}')
+    
+    result.plot_seir()
     
