@@ -1,5 +1,6 @@
 ## NumPy is used for randomly placing the agents on the lattice.
 import numpy as np
+np.random.seed(100) ## Set random seed for reproducibility
 
 ## These are classes used to store the position of agents and the general image of the lattice.
 from agent import Agent
