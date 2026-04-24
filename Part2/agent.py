@@ -1,6 +1,6 @@
 ## File containing Agent class. Each agent has attributes of position and SEIR state, as well as methods used for movement and updating states.
-import random
-random.seed(100) ## Set random seed for reproducibility
+import numpy as np
+np.random.seed(100) ## Set random seed for reproducibility
 
 class Agent:
     def __init__(self, x, y, state):
@@ -25,8 +25,8 @@ class Agent:
     ## Method to attempt to move the agent to a new position on the lattice based on a random direction choice and whether the new position is empty or not.
     def attempt_move(self, lattice):
         ## Choose random direction: up, down, left or right.
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        dx, dy = random.choice(directions)
+        directions = np.array([(0, 1), (0, -1), (1, 0), (-1, 0)])
+        dx, dy = np.random.choice(directions)
         
         ## Creates a new position for the agent
         new_x = self.__x + dx
@@ -62,23 +62,23 @@ class Agent:
         if infected_neighbours > 0:
             ## Calculates infection probability based on number of infected neighbours.
             prob = 1 - (1 - beta) ** infected_neighbours
-            if random.random() < prob:
+            if np.random.random() < prob:
                 ## Changes state of Agent to exposed if the random number is less than the calculated probability, and updates the lattice to reflect this change.
                 self.__state = 2
                 lattice.set_state(self.__x, self.__y, 2)
 
     
-    ## Method that uses the seeded random python library with the values of sigma and gamma to determine whether the state of the agent should be altered.
+    ## Method that uses a seeded numpy.random method with the values of sigma and gamma to determine whether the state of the agent should be altered.
     def update_state(self, lattice, sigma, gamma):
         ## If agent is expsed, the value of sigma is used to determine whether it becomes infected.
         if self.__state == 2:
-            if random.random() < sigma: ## sigma <= 1 in the monte-carlo simulation, differing from part 1 where it is a rate used in the ODE solver.
+            if np.random.random() < sigma: ## sigma <= 1 in the monte-carlo simulation, differing from part 1 where it is a rate used in the ODE solver.
                 ## Changes state of agent to infected if determined by the random number and updates lattice.
                 self.__state = 3
                 lattice.set_state(self.__x, self.__y, 3)
                 
         ## If agent is infected the value of gamma is used to determine whether it becomes recovered.
         elif self.__state == 3:
-            if random.random() < gamma:
+            if np.random.random() < gamma:
                 self.__state = 4
                 lattice.set_state(self.__x, self.__y, 4)
