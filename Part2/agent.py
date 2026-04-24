@@ -22,6 +22,18 @@ class Agent:
     def state(self):
         return self.__state
     
+    ## Method only used for testing purposes to manually set an agents position.
+    def _set_agent(self, x, y, lattice, state):
+        ## Resets the original location given to the agent.
+        lattice.set_state(self.__x, self.__y, 0)
+
+        ## Creates new location for agent.
+        self.__x = x
+        self.__y = y
+        self.__state = state
+
+        lattice.set_state(x, y, self.__state)
+    
     ## Method to attempt to move the agent to a new position on the lattice based on a random direction choice and whether the new position is empty or not.
     def attempt_move(self, lattice):
         ## Choose random direction: up, down, left or right.

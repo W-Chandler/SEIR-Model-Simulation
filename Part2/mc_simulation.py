@@ -24,6 +24,18 @@ class mc_Simulation:
         ## Initialises the 'history' dictionary used to store the number of agents in each state at each time step.
         self.__history = {"S": [], "E": [], "I": [], "R": []}
     
+    ## Property getter used in testing to access private attributes.
+    @property
+    def agents(self):
+        return self.__agents
+    
+    @property
+    def lattice(self):
+        return self.__lattice
+    
+    @property
+    def history(self):
+        return self.__history
     ## Method called from the constructor method, used to fill the lattice at t = 0.
     def __populate_agents(self, num_agents, p_exp):
         for _ in range(num_agents):
