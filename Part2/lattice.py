@@ -39,16 +39,16 @@ class Lattice:
         return 0 <= x < self.__size and 0 <= y < self.__size
 
     ## Method to return the coordinates of the valid neighbouring positions.
-    def get_neighbors(self, x, y):
+    def get_neighbours(self, x, y):
         directions = [(0,1),(0,-1),(1,0),(-1,0)]
-        neighbors = []
+        neighbours = []
 
         for dx, dy in directions:
             nx = x + dx
             ny = y + dy
 
-            ## Checks if the new position is within bounds before adding to the list of neighbors.
+            ## Checks if the new position is within bounds before adding to the list of neighbours.
             if self.in_bounds(nx, ny):
-                neighbors.append((nx, ny))
+                neighbours.append((nx, ny))
 
-        return neighbors
+        return neighbours
