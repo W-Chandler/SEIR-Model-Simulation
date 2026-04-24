@@ -26,7 +26,7 @@ class Agent:
     def attempt_move(self, lattice):
         ## Choose random direction: up, down, left or right.
         directions = np.array([(0, 1), (0, -1), (1, 0), (-1, 0)])
-        dx, dy = np.random.choice(directions)
+        dx, dy = directions[np.random.randint(0, 4)]
         
         ## Creates a new position for the agent
         new_x = self.__x + dx
@@ -44,41 +44,40 @@ class Agent:
             ## Sets new position
             lattice.set_state(self.__x, self.__y, self.__state)
     
-    ## Method to check whether the agent becomes exposed based on the number of infected nighbours and infection probablility (beta).
+    ## Method to check whether the agent becomes exposed based on the number of infected nighbours and infection probablility (beta). Returns a boolean value used in the mc_simulation class.
     def check_infection(self, lattice, beta):
         if self.__state != 1:  ## Only susceptible can be infected
-            return
+            return False
         
-        ## Get neighboring positions using method from the lattice class.
+        ## Get neighbouring positions using method from the lattice class.
         neighbours = lattice.get_neighbours(self.__x, self.__y)
         
-        ## Sums the amount of neighbouring agnests that are infected.
+        ## Sums the amount of neighbouring agents that are infected.
         infected_neighbours = 0
         for nx, ny in neighbours:
             if lattice.get_state(nx, ny) == 3:
                 infected_neighbours += 1
                 
-        ## Checks whether any neighbours are infected, if not then the method ends here.
+        ## Checks whether any neighbours are infected, if not then the method returns False
         if infected_neighbours > 0:
             ## Calculates infection probability based on number of infected neighbours.
             prob = 1 - (1 - beta) ** infected_neighbours
-            if np.random.random() < prob:
-                ## Changes state of Agent to exposed if the random number is less than the calculated probability, and updates the lattice to reflect this change.
-                self.__state = 2
-                lattice.set_state(self.__x, self.__y, 2)
-
+            ## Returns True if the agent becomes exposed.
+            return np.random.random() < prob  
+        return False
     
-    ## Method that uses a seeded numpy.random method with the values of sigma and gamma to determine whether the state of the agent should be altered.
-    def update_state(self, lattice, sigma, gamma):
-        ## If agent is expsed, the value of sigma is used to determine whether it becomes infected.
+    ## Method that uses a seeded numpy.random method with the values of sigma and gamma to determine whether the state of the agent should be altered. Returns either 'I', 'R' or None which is then used in the mc_simulation class to update the state of the agent and lattice accordingly.
+    def update_state(self, sigma, gamma):
+        ## If agent is exposed, the value of sigma is used to determine whether it becomes infected.
         if self.__state == 2:
             if np.random.random() < sigma: ## sigma <= 1 in the monte-carlo simulation, differing from part 1 where it is a rate used in the ODE solver.
-                ## Changes state of agent to infected if determined by the random number and updates lattice.
-                self.__state = 3
-                lattice.set_state(self.__x, self.__y, 3)
-                
+                return 'I'
         ## If agent is infected the value of gamma is used to determine whether it becomes recovered.
         elif self.__state == 3:
             if np.random.random() < gamma:
-                self.__state = 4
-                lattice.set_state(self.__x, self.__y, 4)
+                return 'R'
+        return None
+    
+    ## Method to update the agent's state, called from the mc_simulation class.
+    def set_state(self, new_state):
+        self.__state = new_state
