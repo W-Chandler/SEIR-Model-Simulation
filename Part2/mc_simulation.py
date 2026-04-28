@@ -23,6 +23,8 @@ class mc_Simulation:
 
         ## Initialises the 'history' dictionary used to store the number of agents in each state at each time step.
         self.__history = {"S": [], "E": [], "I": [], "R": []}
+        ## Initialises a list to store the image of the lattice at every step - used for animation plotting.
+        self.__lattice_history = []
     
     ## Property getter used in testing to access private attributes.
     @property
@@ -103,9 +105,11 @@ class mc_Simulation:
         self.__history["E"].append(counts[2])
         self.__history["I"].append(counts[3])
         self.__history["R"].append(counts[4])
+        
+        self.__lattice_history.append(np.copy(self.__lattice.grid))
 
     ## Method to run all of the time steps in the simulation via the step method, then return the history dictionary for analysis and plotting.
     def run(self, steps):
         for _ in range(steps):
             self.step()
-        return self.__history
+        return self.__history, self.__lattice_history
