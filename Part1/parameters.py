@@ -112,10 +112,11 @@ class SweepCollection:
         
         print(f'{"="*50}\nSummary of all parameter sweeps\n{"="*50}')
         for sweep in self.__sweeps:
+            print(f"\n{'-'*50}\n{ sweep.description }\n{'-'*50}")
             sweep.print_summary()
     
     ## Method to group all results into a single plot and save to the specified path.
-    def plot_all(self, save_path = "figures/parameter_sweep.png"):
+    def plot_all(self, save_path = "Part1/figures/parameter_sweep.png"):
         n = len(self.__sweeps)
         ncols = 2
         nrows = (n + 1) // 2
@@ -128,7 +129,7 @@ class SweepCollection:
             ax = axes[idx]
             ## Calls the plot method from ParameterSweep, which calls the plot_seir method from seir_equ.py to generate the SEIR curves or each set of results.
             sweep.plot(ax = ax)
-            axes[idx].set_title(f'{sweep.description} (R0 = {sweep.R0:.1f})')
+            axes[idx].set_title(f'{sweep.description}')
         
         ## Loop to remove any empty sublots due to an odd number of sweeps being performed.
         for idx in range(n, len(axes)):
@@ -143,7 +144,7 @@ class SweepCollection:
         print(f"Figure saved to {save_path}")
         plt.show()
 
-## Function to egt a user input and checkt whether it is in the given bounds.
+## Function to get a user input and check whether it is in the given bounds.
 def get_input(prompt, min_val, max_val):
     while True:
         try:
@@ -183,11 +184,24 @@ def get_parameters():
 ## Main user input function of the program. Creates an object of SweepCollection and adds objects of the ParameterSweep class to it. Allows for multiple sets of variables to be added to the simulation until the user specifies otherwise.
 def user_input():
     collection = SweepCollection()
-    
+    default_c = input("Use default conditions for all sets? (y/n): ").strip().lower()
+    default_p = input("Use default parameters for all sets? (y/n): ").strip().lower()
+    desc_c = input("Do you want the title's to display the initial conditions? (y/n): ").strip().lower()
+    if desc_c != 'y':
+        desc_p = input("Do you want the title's to display the parameters? (y/n): ").strip().lower()
     while True:
-        s0, e0, i0, r0 = get_initial_conditions()
-        beta, sigma, gamma = get_parameters()
-        description = f's = {s0}, β = {beta}, σ = {sigma}, γ = {gamma}, R0 = {beta/gamma:.2f}'
+        if default_c == 'y':
+            s0, e0, i0, r0 = 0.99, 0.01, 0, 0
+        else:
+            s0, e0, i0, r0 = get_initial_conditions()
+        if default_p == 'y':
+            beta, sigma, gamma = 1.0, 1.0, 0.1
+        else:
+            beta, sigma, gamma = get_parameters()
+        if desc_c == 'y':
+            description = f's0 = {s0}, e0 = {e0}, i0 = {i0}, r0 = {r0}'
+        elif desc_p == 'y':
+            description = f'β = {beta}, σ = {sigma}, γ = {gamma}, R0 = {beta/gamma:.1f}'
         
         sweep = ParameterSweep(s0 = s0, e0 = e0, i0 = i0, r0 = r0, 
                                beta = beta, sigma = sigma, gamma = gamma, 
