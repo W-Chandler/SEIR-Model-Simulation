@@ -1,3 +1,11 @@
-numpy
-scipy
-matplotlib
+# Core dependencies for SEIR modelling project
+
+# Numerical computing
+numpy>=1.20.0
+
+# Scientific computing (ODE solver)
+scipy>=1.6.0
+
+# Data visualization and animation
+matplotlib>=3.3.0
+Pillow>=8.0.0
