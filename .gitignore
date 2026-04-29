@@ -16,7 +16,5 @@ part2/build/
 part2/output/*.csv
 part2/output/*.txt
 Assessment2v2.pdf
-part2/figures/
-part1/figures/
-report.tex
-report.pdf
+Part1/figures/
+Part2/figures/
